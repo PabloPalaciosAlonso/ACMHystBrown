@@ -1,0 +1,3 @@
+[submodule "external/FittingAlgorithms"]
+	path = external/FittingAlgorithms
+	url = https://github.com/PabloPalaciosAlonso/FittingAlgorithms.git

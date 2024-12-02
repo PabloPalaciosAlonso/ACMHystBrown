@@ -1,10 +1,5 @@
-*
-!*/
-!*.*
-
 *.so
 *~
 *#
-FittingAlgorithms.egg-info/
 build/
 dist/
