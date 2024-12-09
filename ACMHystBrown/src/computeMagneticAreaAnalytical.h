@@ -21,21 +21,24 @@ double computeMaxArea(double badim) {
 }
 
 double computeAreaAdim(double wadim, double badim){
-  double p         = (0.55 - 1) * exp(-8.5 / pow(badim, 1.75)) + 1;
+  double p0        = - 0.45 * exp(-8.5 / pow(badim, 1.75)) + 1;
   double amax      = computeMaxArea(badim);
   double wmax      = 1 + 0.287 * pow(badim, 0.8915) / (1 + 5.52 * pow(badim, -1.16));
   double slope_inf = M_PI * badim / (3 * wmax);
   double slope_0   = M_PI * badim / (3 * pow(1 + 0.16 * pow(badim, 2.05), 1.0 / 2.05));
-  double q         = log(slope_inf / amax) / log((p + 1) / p);
-  double r         = (p + 1) / q;
-  double b         = p * pow(amax, -1 / q) / (q * r);
-  double a         = b / p;
-  double l1        = 1.8;
-  double l2        = (1 - p) / l1;
-  double kk        = pow(1 / (wmax * slope_0 * pow(a, q)), 1 / l2);
-  double a1        = (wadim / wmax) / pow(kk + (1 + 1660 * exp(-6.33 * pow(wadim, 0.18)) * exp(-11 / badim) * pow(badim, -0.5)) * pow(wadim / wmax, l1), l2);
+
+  double p1        = log(slope_inf / amax) / log((p0 + 1) / p0);
+  double p2        = (p0 + 1) / p1;
+  double p3        = 1.8;
+  double p4        = (1 - p0) / p3;
   
-  return a1 / pow((a + b * pow(wadim / wmax, r)), q);
+  double c1        = p0 * pow(amax, -1 / p1) / (p1 * p2);
+  double c2        = c1 / p0;
+  double c3        = pow(1 / (wmax * slope_0 * pow(c2, p1)), 1 / p4);
+  double c4        = 1660 * exp(-6.33 * pow(wadim, 0.18)) * exp(-11 / badim) * pow(badim, -0.5);
+  double num       = (wadim / wmax) / pow(c3 + (1 + c4 ) * pow(wadim / wmax, p3), p4);
+  
+  return num / pow((c2 + c1 * pow(wadim / wmax, p2)), p1);
 }
 
 double computeArea(FieldParameters fb,

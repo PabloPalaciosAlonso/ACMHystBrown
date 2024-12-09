@@ -1,6 +1,6 @@
 import random
 import numpy as np
-import ACMHystAreaBrown
+import ACMHystBrown
 import sys
 
 # Generate random numbers (similar to generateRandomDoubleb)
@@ -26,7 +26,7 @@ def read_areas(filename):
             freq, field, area = map(float, parts)
 
             # Create field parameters and adjust area
-            fp = ACMHystAreaBrown.FieldParameters(amplitude=field * 1e-6 * mu0, frequency=freq * 1e-6)
+            fp = ACMHystBrown.FieldParameters(amplitude=field * 1e-6 * mu0, frequency=freq * 1e-6)
             fb.append(fp)
             areas.append(area / field)
 
@@ -55,7 +55,7 @@ def main():
     jump_size       = [0.1] * len(mc_temperatures)
     initial_guesses = generate_initial_guesses(len(mc_temperatures))
 
-    pt_par = ACMHystAreaBrown.PTParameters()
+    pt_par = ACMHystBrown.PTParameters()
     pt_par.temperatures   = mc_temperatures
     pt_par.numStepsFinish = 2000
     pt_par.numStepsSwap   = 100
@@ -65,7 +65,7 @@ def main():
     pt_par.printSteps     = 10000
 
     # GaussNewton configuration
-    gn_par = ACMHystAreaBrown.GNParameters()
+    gn_par = ACMHystBrown.GNParameters()
     gn_par.maxIterations  = 500
     gn_par.tolerance      = 1e-4
     gn_par.regularization = 1e-6
@@ -88,7 +88,7 @@ def main():
                          "numParticles":1};
 
     # Fit the areas using the Python wrapper
-    fit_result = ACMHystAreaBrown.fitAreas(
+    fit_result = ACMHystBrown.fitAreas(
         fb, areas, pt_par, gn_par, initial_guesses, extra_parameters
     )
 

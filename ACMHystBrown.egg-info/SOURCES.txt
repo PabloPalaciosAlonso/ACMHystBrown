@@ -1,0 +1,14 @@
+LICENSE
+setup.py
+ACMHystBrown/__init__.py
+ACMHystBrown.egg-info/PKG-INFO
+ACMHystBrown.egg-info/SOURCES.txt
+ACMHystBrown.egg-info/dependency_links.txt
+ACMHystBrown.egg-info/not-zip-safe
+ACMHystBrown.egg-info/requires.txt
+ACMHystBrown.egg-info/top_level.txt
+ACMHystBrown/src/__init__.py
+ACMHystBrown/src/computeMagnetizationCyclesFP.py
+ACMHystBrown/src/integrateAreaCycles.py
+ACMHystBrown/src/solveFP.py
+wrappers/ACMHystBrownWrapper.cpp

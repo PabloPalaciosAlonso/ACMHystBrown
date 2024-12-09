@@ -1,6 +1,6 @@
 #include <iostream>
 #include <map>
-#include "computeMagneticArea.h"
+#include "computeMagneticAreaAnalytical.h"
 #include "FittingAlgorithms.h"
 
 using namespace FittingAlgorithms;

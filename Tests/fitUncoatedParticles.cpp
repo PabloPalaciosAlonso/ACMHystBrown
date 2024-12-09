@@ -33,7 +33,7 @@ void readAreas(const std::string& filename, std::vector<FieldParameters>& fb, st
       throw std::runtime_error("Error reading line: " + line);
     }
     
-    FieldParameters fp; fp.freq = freq*1e-6; fp.field = field*1e-6*mu0;
+    FieldParameters fp; fp.frequency = freq*1e-6; fp.amplitude = field*1e-6*mu0;
     fb.push_back(fp);
     areas.push_back(area/(field));
   }
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
   ptPar.jumpSize       = jumpSize;
   ptPar.tolerance      = 0.00001;
   ptPar.numThreads     = 5;
-  ptPar.printSteps     = 1000;
+  ptPar.printSteps     = 10000;
   
   
   GaussNewton::Parameters gnPar;
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]){
   gnPar.regularization    = 1e-6;
   gnPar.printSteps        = 5;
   
-  std::string filename = std::string(argv[1]);
+  std::string filename = "Areas_rc_15.data";
   std::vector<FieldParameters> fb;
   std::vector<double> areas;
   readAreas(filename, fb, areas);
@@ -99,11 +99,29 @@ int main(int argc, char* argv[]){
     {"viscosity", 0.0009},
     {"coatingWidth", 0.0},
   };
+
+  std::map<std::string, double> targetParameters = {
+    {"coreRadius", 15},
+    {"msat", 0.000150},
+    {"numParticles", 1},
+  };
   
-  auto params = fitAreas(fb, areas, ptPar, gnPar,
-                         initialGuesses, extraParameters);
+  auto adjustedParameters = fitAreas(fb, areas, ptPar, gnPar,
+                                     initialGuesses, extraParameters);
   
-  for (const auto& pair : params.parameters) {
+  std::cout << "Adjusted Parameters:" << std::endl;
+  for (const auto& pair : adjustedParameters.parameters) {
     std::cout << pair.first << ": " << pair.second << std::endl;
   }
+  
+  std::cout << "\nTarget Parameters:" << std::endl;
+  for (const auto& pair : targetParameters) {
+    std::cout << pair.first << ": " << pair.second << std::endl;
+  }
+
+  std::cout << "\nStandard Errors:" << std::endl;
+  for (const auto& pair : adjustedParameters.errors) {
+    std::cout << pair.first << ": " << pair.second << std::endl;
+  }
+  
 }

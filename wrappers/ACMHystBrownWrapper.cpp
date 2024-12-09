@@ -1,4 +1,4 @@
-#include "ACMHystAreaBrownWrapper.h"
+#include "ACMHystBrownWrapper.h"
 
 // Registrar FieldParameters
 void registerFieldParameters(py::module_& module) {
@@ -66,9 +66,10 @@ void registerFitAreas(py::module_& module) {
                py::arg("extraParameters"));
 
 }
+
 // Módulo principal
-PYBIND11_MODULE(ACMHystAreaBrown, m) {
+PYBIND11_MODULE(ACMHystBrown, m) {
   registerFieldParameters(m);
   registerFittingParameters(m);
   registerFitAreas(m);
-}
+ }
