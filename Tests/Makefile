@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -O3 -fopenmp -I../ACMHystBrown/src -I../external/FittingAlgorithms/src
+CXXFLAGS = -O3 -fopenmp -I../src -I../external/FittingAlgorithms/src
 
 # Target to build the main executable directly
 fitUncoatedParticles: fitUncoatedParticles.cpp

@@ -8,7 +8,7 @@ base_dir = os.path.abspath(os.path.dirname(__file__))
 # Directorios de inclusión
 include_dirs = [
     pybind11.get_include(),
-    os.path.join(base_dir, "ACMHystBrown", "src"),  # Ruta actualizada
+    os.path.join(base_dir, "src"),  # Ruta actualizada
     os.path.join(base_dir, "wrappers"),
     os.path.join(base_dir, "external", "FittingAlgorithms", "src"),
 ]
