@@ -4,18 +4,25 @@
 #include "FittingAlgorithms.h"
 
 using namespace FittingAlgorithms;
+
 // Helper function to retrieve a parameter with extra and validation
 double getParameter(const std::map<std::string, double>& fittingParams,
                     const std::map<std::string, double>& extraParams,
-                    const std::string& key) {
+                    const std::string& key,
+                    std::optional<double> defaultValue = std::nullopt) {
     bool inMainParams = fittingParams.count(key) > 0;
     bool inExtraParams = extraParams.count(key) > 0;
 
     if (inMainParams && inExtraParams) {
         throw std::runtime_error("Parameter \"" + key + "\" is present in both fittingParams and extraParams.");
     }
+
     if (!inMainParams && !inExtraParams) {
-        throw std::runtime_error("Parameter \"" + key + "\" is missing in both fittingParams and extraParams.");
+        // If key is not found in either map, use the default value if provided
+        if (defaultValue.has_value()) {
+            return defaultValue.value();
+        }
+        throw std::runtime_error("Parameter \"" + key + "\" is missing in both fittingParams and extraParams, and no default value is provided.");
     }
 
     return inMainParams ? fittingParams.at(key) : extraParams.at(key);
@@ -26,16 +33,18 @@ double computeAreaFit(FieldParameters fb,
                       std::map<std::string, double> extraParameters){ 
   
   // Retrieve parameters from fittingParameters or extra to extraParameters if not found
-  double coatingWidth = getParameter(fittingParameters, extraParameters, "coatingWidth");
-  double coreRadius   = getParameter(fittingParameters, extraParameters, "coreRadius");
-  double msat         = getParameter(fittingParameters, extraParameters, "msat");
-  double numParticles = getParameter(fittingParameters, extraParameters, "numParticles");
-  double viscosity    = getParameter(fittingParameters, extraParameters, "viscosity");
-  double kBT          = getParameter(fittingParameters, extraParameters, "kBT");
+  double coatingWidth  = getParameter(fittingParameters, extraParameters, "coatingWidth");
+  double coreRadius    = getParameter(fittingParameters, extraParameters, "coreRadius");
+  double msat          = getParameter(fittingParameters, extraParameters, "msat");
+  double numParticles  = getParameter(fittingParameters, extraParameters, "numParticles");
+  double viscosity     = getParameter(fittingParameters, extraParameters, "viscosity");
+  double kBT           = getParameter(fittingParameters, extraParameters, "kBT");
+  double stdCoreRadius = getParameter(fittingParameters, extraParameters, "stdCoreRadius", 0.0);
 
-  // double std_coatingWidth = getParameter(fittingParameters, extraParameters, "std_coatingWidth");
-  //double std_coreRadius   = getParameter(fittingParameters, extraParameters, "std_coreRadius");
-  return numParticles * computeArea(fb, coreRadius, msat, coatingWidth, viscosity, kBT);
+  if (stdCoreRadius <= 0)
+    return numParticles * computeArea(fb, coreRadius, msat, coatingWidth, viscosity, kBT);
+  else
+    return numParticles * computeArea(fb, coreRadius, msat, coatingWidth, viscosity, kBT, stdCoreRadius);
 }
 
 

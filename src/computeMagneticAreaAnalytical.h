@@ -6,17 +6,30 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
-
+#include <boost/math/quadrature/gauss_kronrod.hpp>
+#include <boost/math/distributions/lognormal.hpp>
+#include <gsl/gsl_integration.h>
+#include <gsl/gsl_errno.h>
 
 struct FieldParameters{
   double amplitude;
   double frequency;
 };
 
+struct IntegrandParams {
+  double sigma;
+  double mu;
+  double coatingWidth;
+  double viscosity;
+  double kBT;
+  double msat;
+  FieldParameters fb;
+};
+
 double computeMaxArea(double badim) {
   double weight = exp(-0.5 / pow(badim, 1.8));
   double logarg = log(1 + 0.1 * pow(badim, 0.9) + 0.056 * pow(badim, 1.65) + 1.54e-05 * pow(badim, 3.21));
-  double maxA = M_PI * badim / 6 + weight * (4 - M_PI * badim / 6 - 4 / (1 + logarg));
+  double maxA   = M_PI * badim / 6 + weight * (4 - M_PI * badim / 6 - 4 / (1 + logarg));
   return maxA;
 }
 
@@ -50,9 +63,9 @@ double computeArea(FieldParameters fb,
 
   double hydroRadius  = coreRadius + coatingWidth;
   double hydroRadius3 = hydroRadius * hydroRadius * hydroRadius;
-  double coreRadius3  = coreRadius * coreRadius * coreRadius;
-  double m0           = 4./3.*M_PI*coreRadius3 * msat;
-  double wadim        = 2*M_PI*fb.frequency*4*M_PI*viscosity*hydroRadius3/kBT;
+  double coreRadius3  = coreRadius  *  coreRadius * coreRadius;
+  double m0           = 4./3. * M_PI * coreRadius3 * msat;
+  double wadim        = 8*M_PI*fb.frequency*M_PI*viscosity*hydroRadius3/kBT;
   double badim        = m0*fb.amplitude/kBT;
 
   return computeAreaAdim(wadim, badim);
@@ -73,29 +86,49 @@ std::vector<double> computeArea(std::vector<FieldParameters>& fb,
     
     return areas;
 }
+
+double lognormal_pdf(double x, double sigma, double mu) {
+  if (x <= 0.0) return 0.0;
+  return (1.0 / (x * sigma * std::sqrt(2.0 * M_PI))) *
+    std::exp(-std::pow(std::log(x) - mu, 2) / (2.0 * sigma * sigma));
+}
+
+double area_integrand(double coreRadius, void* paramsIn) {
+  const IntegrandParams* p = static_cast<const IntegrandParams*>(paramsIn);
+  double area = computeArea(p->fb, coreRadius, p->msat, p->coatingWidth,
+                            p->viscosity, p->kBT);
+  double rc3 = coreRadius * coreRadius * coreRadius;
+  return  area * lognormal_pdf(coreRadius, p->sigma, p->mu) * rc3;
+}
+
+double computeArea(FieldParameters fb, double meanCoreRadius, double msat,
+                   double coatingWidth, double viscosity, double kBT, double stdCoreRadius) {
+
   
-//   /* if (std_coreRadius >0.0){ */
-//   /*   std_coreRadius = std::min(std_coreRadius, 0.9); */
-//   /*   std_coreRadius = std::max(std_coreRadius, 0.01); */
-//   /* } */
-  
-//   /* std_coreRadius*=coreRadius; */
-  
-//   double f = fb.frequency;
-//   double b = fb.amplitude;
-//   double area;
-  
-//   static double last_coreRadius     = std::numeric_limits<double>::quiet_NaN();
-//   static double last_std_coreRadius = std::numeric_limits<double>::quiet_NaN();
-//   static double coreRadius3_mean    = 0.0;
-  
-//   if (std_coatingWidth == 0.0 && std_coreRadius == 0.0) {
-//     double coreRadius3  = coreRadius*coreRadius*coreRadius;
-//     double hydroRadius3 = (coreRadius + coatingWidth)*(coreRadius + coatingWidth)*(coreRadius + coatingWidth);
-//     double wadim        = 8 * M_PI * f * M_PI * viscosity * hydroRadius3 / temperature;
-//     double badim        = 4 * M_PI * b * msat * coreRadius3 / (3 * temperature);
-//     area  = computeAreaAdim(wadim, badim);
-//   } else if (std_coatingWidth == 0 && std_coreRadius != 0.0) {
-//     std::cout<<"TODO\n";
-//     return area*normalization;
-// }
+    double variance        = stdCoreRadius * stdCoreRadius;
+    double sigma           = std::sqrt(std::log(1 + variance / (meanCoreRadius * meanCoreRadius)));
+    double mu              = std::log(meanCoreRadius) - 0.5 * sigma * sigma;
+
+    double meanCoreRadius3 = std::exp(3 * mu + 4.5 * sigma * sigma);
+    IntegrandParams params = {sigma, mu, coatingWidth, viscosity, kBT, msat, fb};
+    gsl_function F;
+
+    F.function = [](double x, void* p) { return area_integrand(x, p); };
+    F.params   = &params;
+
+    gsl_integration_workspace* workspace = gsl_integration_workspace_alloc(1000);
+    
+    double result, error;
+    
+    if (stdCoreRadius/meanCoreRadius<0.01){
+      result = computeArea(fb, meanCoreRadius, msat, coatingWidth, viscosity, kBT)*meanCoreRadius3;
+    } else if (stdCoreRadius/meanCoreRadius>0.75){
+      double lowerLimit = 0;
+      double upperLimit = meanCoreRadius + 5 * stdCoreRadius;
+      gsl_integration_qag(&F, lowerLimit, upperLimit, 1e-8, 1e-8, 1000, GSL_INTEG_GAUSS15, workspace, &result, &error);
+    } else {
+      gsl_integration_qagiu(&F, 0.0, 1e-8, 1e-8, 1000, workspace, &result, &error);
+    }
+    gsl_integration_workspace_free(workspace);
+    return result / meanCoreRadius3;
+}

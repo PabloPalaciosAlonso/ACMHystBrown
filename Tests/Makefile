@@ -1,10 +1,19 @@
+# Compiler and flags
 CXX = g++
 CXXFLAGS = -O3 -fopenmp -I../src -I../external/FittingAlgorithms/src
+LDFLAGS = -lgsl -lgslcblas -lm
 
-# Target to build the main executable directly
-fitUncoatedParticles: fitUncoatedParticles.cpp
-	$(CXX) $(CXXFLAGS) fitUncoatedParticles.cpp -o fitUncoatedParticles
+# Sources and executables
+SOURCES = fitUncoatedParticles.cpp fitDistributionOfUncoatedParticles.cpp
+EXECUTABLES = fitUncoatedParticles fitDistributionOfUncoatedParticles
 
-# Clean target to remove the generated executable
+# Default target
+all: $(EXECUTABLES)
+
+# Pattern rule for building executables
+%: %.cpp
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LDFLAGS)
+
+# Clean target to remove the generated executables
 clean:
-	rm -f fitUncoatedParticles
+	@rm -f $(EXECUTABLES)
