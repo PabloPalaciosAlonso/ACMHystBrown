@@ -1,0 +1,3 @@
+This folder contains the raw experimental data used in the paper titled 'Fast and accurate characterization of bioconjugated particles and solvent properties by a general nonlinear analytical relation for the AC magnetic hysteresis area' (DOI: https://doi.org/10.1039/D5NR00602C).
+
+Data corresponding to surface modification by molecular recognition were obtained from the supporting information of the article titled 'Multiparametric modulation of magnetic transduction for biomolecular sensing in liquids' (DOI: https://doi.org/10.1039/D3NR06489A).
