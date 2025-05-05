@@ -7,6 +7,7 @@
 #include <vector>
 #include <tuple>
 #include "FitMagneticArea.h"
+#include "computeMagneticAreaAnalytical.h"
 #include "GaussNewton.h"
 #include "ParallelTempering.h"
 #include "utils/defines.h"
@@ -15,5 +16,6 @@ namespace py = pybind11;
 void registerFieldParameters(py::module_& module);
 void registerFittingParameters(py::module_& module);
 void registerFitAreas(py::module_& module);
+void registerComputeArea(py::module_& module);
 
 #endif // ACMHYSTAREABROWN_H

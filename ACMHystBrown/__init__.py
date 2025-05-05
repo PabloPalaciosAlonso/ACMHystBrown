@@ -10,4 +10,5 @@ __all__ = [
     "computeMagnetizationCycle",
     "calculateArea_MT",
     "calculateArea_MB",
+    "computeArea"
 ]

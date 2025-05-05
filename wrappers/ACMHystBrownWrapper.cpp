@@ -67,9 +67,31 @@ void registerFitAreas(py::module_& module) {
 
 }
 
+void registerComputeArea(py::module_& module) {
+    module.def("computeArea", [](FieldParameters fb,
+                                 double meanCoreRadius,
+                                 double msat,
+                                 double coatingWidth,
+                                 double viscosity,
+                                 double kBT,
+                                 double stdCoreRadius) {
+        return computeArea(fb, meanCoreRadius, msat, coatingWidth, viscosity, kBT, stdCoreRadius);
+    },
+               py::arg("fb"),
+               py::arg("meanCoreRadius"),
+               py::arg("msat"),
+               py::arg("coatingWidth"),
+               py::arg("viscosity"),
+               py::arg("kBT"),
+               py::arg("stdCoreRadius"),
+               "Computa el área bajo la curva de magnetización.");
+}
+
+
 // Módulo principal
 PYBIND11_MODULE(ACMHystBrown, m) {
   registerFieldParameters(m);
   registerFittingParameters(m);
   registerFitAreas(m);
+  registerComputeArea(m);
  }
